@@ -1,36 +1,36 @@
+#!/usr/bin/env python3
+
 # Example script to download Seebeck coefficient and structures from MPDS
-import os
 import pandas as pd
 from mpds_client import MPDSDataRetrieval, MPDSDataTypes
 
 
-def download_property(
+def download_properties(
     client: MPDSDataRetrieval, 
     phys_prop: str = "Seebeck coefficient"
 ) -> pd.DataFrame:
     """
-    Requests some physical property from MPDS
+    Requests some physical properties from MPDS
     
     Parameters
     ----------
     client : MPDSDataRetrieval
         Client to connect to MPDS
     phys_prop : str
-        Physical property to request from MPDS, e.g. "Seebeck coefficient" or "Electrical conductivity"
+        Physical properties to request from MPDS, e.g. "Seebeck coefficient" or "Electrical conductivity"
         
     Returns
     -------
         DataFrame with columns: 'Phase', 'Formula', 'SG', 'Entry', 'Property', 'Units', 'Value'
     """
-    dfrm = pd.DataFrame(client.get_dataframe({"props": phys_prop}))
-    return dfrm
+    return pd.DataFrame(client.get_dataframe({"props": phys_prop}))
 
-def download_structure(
+def download_structures(
     client: MPDSDataRetrieval,
     phases: list,
 ) -> pd.DataFrame:
     """
-    Requests chemical structure from MPDS according to phases
+    Requests chemical structures from MPDS according to phases
 
     Parameters
     ----------
@@ -78,29 +78,37 @@ def download_structure(
 
 
 if __name__ == "__main__":
-    # set up the MPDS client with your API key
-    os.environ["MPDS_API"] = "KEY"
-    client = MPDSDataRetrieval(dtype=MPDSDataTypes.PEER_REVIEWED, api_key=os.environ["MPDS_API"])
+    client = MPDSDataRetrieval(dtype=MPDSDataTypes.PEER_REVIEWED)
     
     # get Seebeck coefficient data
-    dfrm_seebeck = download_property(client, "Seebeck coefficient")
+    dfrm_seebeck = download_properties(client, "Seebeck coefficient")
     print(f"Downloaded {len(dfrm_seebeck)} Seebeck properties from MPDS")
     print(dfrm_seebeck)
 
     phases = set(dfrm_seebeck['Phase'].tolist())
 
     # get structures for data with Seebeck coefficient
-    dfrm_structure = download_structure(client, phases)
+    dfrm_structure = download_structures(client, phases)
 
-    dfrm_seebeck.rename(columns={'Phase': 'phase_id'}, inplace=True)
+    dfrm_seebeck.rename(columns={'Phase': 'phase_id', 'SG': 'sg_n', 'Formula': 'formula'}, inplace=True)
 
     # merge Seebeck properties with structures
-    dfrm_merged = pd.merge(dfrm_structure, dfrm_seebeck, on='phase_id', how='inner')
-    
-    # remove duplicates based on 'phase_id'
-    # keep only the first occurrence of each 'phase_id'
-    mask = ~dfrm_merged['phase_id'].duplicated()
-    result_df = dfrm_merged[mask]
+    dfrm_merged = pd.merge(
+        dfrm_structure, 
+        dfrm_seebeck, 
+        on='phase_id', 
+        how='inner'
+    )
+
+    # filter rows where sg_n and formula match in both dataframes
+    mask = (dfrm_merged['sg_n_x'] == dfrm_merged['sg_n_y']) & \
+        (dfrm_merged['formula_x'] == dfrm_merged['formula_y'])
+
+    result_df = dfrm_merged[mask].copy()
+
+    # delete unnecessary columns and rename them
+    result_df = result_df.drop(columns=['sg_n_y', 'formula_y'])
+    result_df = result_df.rename(columns={'sg_n_x': 'sg_n', 'formula_x': 'formula'})
     
     print(f"Downloaded {len(result_df)} Seebeck properties with structures from MPDS")
     print(result_df)

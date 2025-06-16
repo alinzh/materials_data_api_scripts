@@ -82,7 +82,7 @@ if __name__ == "__main__":
     
     # get Seebeck coefficient data
     dfrm_seebeck = download_properties(client, "Seebeck coefficient")
-    print(f"Downloaded {len(dfrm_seebeck)} Seebeck properties from MPDS")
+    print(f"Downloaded {len(dfrm_seebeck)} Seebeck coefficient values from MPDS")
     print(dfrm_seebeck)
 
     phases = set(dfrm_seebeck['Phase'].tolist())
@@ -92,25 +92,14 @@ if __name__ == "__main__":
 
     dfrm_seebeck.rename(columns={'Phase': 'phase_id', 'SG': 'sg_n', 'Formula': 'formula'}, inplace=True)
 
-    # merge Seebeck properties with structures
-    dfrm_merged = pd.merge(
-        dfrm_structure, 
-        dfrm_seebeck, 
-        on='phase_id', 
-        how='inner'
-    )
-
-    # filter rows where sg_n and formula match in both dataframes
-    mask = (dfrm_merged['sg_n_x'] == dfrm_merged['sg_n_y']) & \
-        (dfrm_merged['formula_x'] == dfrm_merged['formula_y'])
-
-    result_df = dfrm_merged[mask].copy()
-
-    # delete unnecessary columns and rename them
-    result_df = result_df.drop(columns=['sg_n_y', 'formula_y'])
-    result_df = result_df.rename(columns={'sg_n_x': 'sg_n', 'formula_x': 'formula'})
+    # merge Seebeck coefficient with structures
+    dfrm_merged = pd.merge(dfrm_structure, dfrm_seebeck, on='phase_id', how='inner')
     
-    print(f"Downloaded {len(result_df)} Seebeck properties with structures from MPDS")
+    # remove duplicates based on 'phase_id'
+    # keep only the first occurrence of each 'phase_id'
+    mask = ~dfrm_merged['phase_id'].duplicated()
+    result_df = dfrm_merged[mask]
+    
+    print(f"Downloaded {len(result_df)} Seebeck coefficient values with structures from MPDS")
     print(result_df)
     print("Columns in the result:", result_df.columns.tolist())
-    

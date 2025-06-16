@@ -4,13 +4,15 @@ This repository contains python scripts and Jupyter notebooks to download and an
 - Materials project (MP)
 - Open quantum materials database (OQMD)
 - Inorganic crystal structure database (ICSD)
+- Materials Platform for Data Science (MPDS)
 
 A periodic table combining data from `mendeleev`, `ase`, `pymatgen` and other custom descriptors is provided.
 
 #### Content of this Readme
 - [Requirements](#requirements)  
 - [Materials Project (MP)](#materials-project-mp)
-- [Inorganic crystal structure database (ICSD)](#inorganic-crystal-structure-database-icsd)  
+- [Inorganic crystal structure database (ICSD)](#inorganic-crystal-structure-database-icsd)
+- [Materials Platform for Data Science (MPDS)](#main-mpds-api-documentation)
 - [Open quantum materials database (OQMD)](#open-quantum-materials-database-oqmd)
 - [Periodic table](#periodic-table)
 - [References](#references)  
@@ -23,7 +25,8 @@ The download scripts require
     pip install pandas
     pip install jupyter
     pip install pymatgen
-
+    pip install mpds_client
+    
 The notebooks require
 
     pip install seaborn
@@ -79,6 +82,10 @@ in a new `pandas.DataFrame` saved in `icsd/all_icsd_cifs_augmented.pkl` file. Th
 
 See the `example_icsd.ipynb` Jupyter notebooks for usage examples (along with `example_mp_vs_icsd.ipynb` if you have MP downloaded).
 
+## Main MPDS API documentation:
+
+- https://developer.mpds.io one of its main ideas is that the different data types (crystal structures, physical properties, and phase diagrams) from the different experimental articles are linked together via the `phase_id` distinct phase ids (fully mapped onto MP ids) allowing for unprecedentedly complex and insightful queries.
+
 
 ## Open quantum materials database (OQMD)
 
@@ -119,4 +126,3 @@ See the `example_descriptors.ipynb` Jupyter notebook for usage examples.
 - matminer retreiver for MDF, MPDS, OQMD and MongoDB : https://hackingmaterials.lbl.gov/matminer/matminer.data_retrieval.html#
 ##### More databases which could be added to this repository
 - MDF: https://materialsdatafacility.org
-- MPDS: https://mpds.io/#start
